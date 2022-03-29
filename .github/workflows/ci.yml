@@ -26,17 +26,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install codecov pre-commit
-
-      - name: Install rio-cogeo
-        run: python -m pip install .["test"]
+          python -m pip install .["test"]
 
       - name: Run test
         run: python -m pytest --cov rio_tiler_fs --cov-report xml --cov-report term-missing
 
-      # Run pre-commit
+      # Run pre-commit (only for python-3.8)
       - name: run pre-commit
-        run: pre-commit run --all-files
+        if: matrix.python-version == 3.8
+        run: |
+          python -m pip install pre-commit
+          pre-commit run --all-files
 
       - name: Upload Results
         if: success()
@@ -62,6 +62,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install flit
+          python -m pip install .
 
       - name: Set tag version
         id: tag
@@ -71,7 +72,7 @@ jobs:
       - name: Set module version
         id: module
         # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-        run: echo ::set-output name=version::$(python -c 'from importlib.metadata import version; print(version("rio_cogeo"))')
+        run: echo ::set-output name=version::$(python -c 'from importlib.metadata import version; print(version("rio_tiler_fs"))')
 
       - name: Build and publish
         if: steps.tag.outputs.tag == steps.module.outputs.version
